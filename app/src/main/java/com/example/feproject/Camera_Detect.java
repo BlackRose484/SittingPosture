@@ -65,6 +65,8 @@ public class Camera_Detect extends AppCompatActivity {
     private Recording recording = null;
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
+    private boolean isRecording = false;
+
     private Handler timerHandler = new Handler();
     private Runnable timerRunnable;
     private ExecutorService cameraExecutor;
@@ -140,6 +142,9 @@ public class Camera_Detect extends AppCompatActivity {
                 timerHandler.postDelayed(this, 500);
             }
         };
+
+
+        startCameraX(cameraFacing);
     }
 
     private boolean allPermissionsGranted() {
@@ -175,7 +180,6 @@ public class Camera_Detect extends AppCompatActivity {
                         new ImageAnalysis.Builder()
                                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                                 .build();
-
                 imageAnalysis.setAnalyzer(cameraExecutor, image -> {
                     processImage(image);
                     image.close();
@@ -187,10 +191,12 @@ public class Camera_Detect extends AppCompatActivity {
             }
         }, ContextCompat.getMainExecutor(this));
 
+
     }
 
 
     private void processImage(ImageProxy image) {
+
         // Chuyển đổi ImageProxy thành byte array hoặc base64 string
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
         byte[] bytes = new byte[buffer.remaining()];
@@ -198,13 +204,23 @@ public class Camera_Detect extends AppCompatActivity {
 
         // Chuyển đổi thành base64
         String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+//        Log.d("DEBUG",base64Image);
+        APIs.checkPoseAsync(base64Image, new APIs.Callback() {
+            @Override
+            public void onResult(String result) {
+                // Update UI with the result
+                runOnUiThread(() -> {
+                    PredictTextView.setText(result);
+                    Log.d("RESULTS",result);
+                });
+            }
+        });
 
-        // Gửi ảnh qua APIi
-        if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
-            PredictTextView.setText("This is a man");
-        } else {
-            PredictTextView.setText("This is a dog");
-        }
+//        if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
+//            PredictTextView.setText("This is a man");
+//        } else {
+//            PredictTextView.setText("This is a dog");
+//        }
     }
 
     private void takePhoto() {
@@ -235,56 +251,98 @@ public class Camera_Detect extends AppCompatActivity {
         });
     }
 
+//    private void startRecording() {
+//        Recording record1 = recording;
+//        if (record1 != null) {
+//            stopTimer();
+//            record1.stop();
+//            recording = null;
+//            return;
+//        }
+//        startTimer();
+//
+//        String name = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis());
+//        ContentValues contentValues = new ContentValues();
+//        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+//        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+//        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+//
+//        MediaStoreOutputOptions outputOptions = new MediaStoreOutputOptions.Builder(getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+//                .setContentValues(contentValues)
+//                .build();
+//
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+//            // TODO: Consider calling
+//            //    ActivityCompat#requestPermissions
+//            // here to request the missing permissions, and then overriding
+//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//            //                                          int[] grantResults)
+//            // to handle the case where the user grants the permission. See the documentation
+//            // for ActivityCompat#requestPermissions for more details.
+//            String msg = "Error: Please get audio permission";
+//            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//        recording = videoCapture.getOutput().prepareRecording(Camera_Detect.this, outputOptions).withAudioEnabled().start(ContextCompat.getMainExecutor(Camera_Detect.this), videoRecordEvent -> {
+//            if (videoRecordEvent instanceof VideoRecordEvent.Start) {
+//                btnVideo.setEnabled(true);
+//                btnVideo.setImageResource(R.drawable.on_record);
+//            } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+//                if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
+//                    String msg = "Video capture succeeded: ";
+//                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+//                } else {
+//                    recording.close();
+//                    recording = null;
+//                    String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
+//                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+//                }
+//                btnVideo.setImageResource(R.drawable.videocam);
+//            }
+//        });
+//    }
+
     private void startRecording() {
-        Recording record1 = recording;
-        if (record1 != null) {
+        if (!isRecording) {
+            isRecording = true;
+//            btnVideo.setText("Stop Recording");
+            startTimer();
+            timerHandler.postDelayed(captureImageRunnable, 0);
+        } else {
+            isRecording = false;
+//            btnVideo.setText("Start Recording");
             stopTimer();
-            record1.stop();
-            recording = null;
-            return;
+            timerHandler.removeCallbacks(captureImageRunnable);
         }
-        startTimer();
+    }
 
-        String name = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis());
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
-
-        MediaStoreOutputOptions outputOptions = new MediaStoreOutputOptions.Builder(getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-                .setContentValues(contentValues)
-                .build();
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            String msg = "Error: Please get audio permission";
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-            return;
+    // Runnable for capturing images at regular intervals
+    private Runnable captureImageRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isRecording) {
+                captureImageForPrediction();
+                timerHandler.postDelayed(this, 1000); // Capture image every 0.5 seconds
+            }
         }
-        recording = videoCapture.getOutput().prepareRecording(Camera_Detect.this, outputOptions).withAudioEnabled().start(ContextCompat.getMainExecutor(Camera_Detect.this), videoRecordEvent -> {
-            if (videoRecordEvent instanceof VideoRecordEvent.Start) {
-                btnVideo.setEnabled(true);
-                btnVideo.setImageResource(R.drawable.on_record);
-            } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
-                    String msg = "Video capture succeeded: ";
-                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-                } else {
-                    recording.close();
-                    recording = null;
-                    String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
-                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-                }
-                btnVideo.setImageResource(R.drawable.videocam);
+    };
+
+    // Capture image and process for prediction
+    private void captureImageForPrediction() {
+        imageCapture.takePicture(ContextCompat.getMainExecutor(this), new ImageCapture.OnImageCapturedCallback() {
+            @Override
+            public void onCaptureSuccess(@NonNull ImageProxy image) {
+                processImage(image);
+                image.close();
+            }
+
+            @Override
+            public void onError(@NonNull ImageCaptureException exception) {
+                Toast.makeText(Camera_Detect.this, "Capture failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 
     private void startTimer() {
         startTime = System.currentTimeMillis();

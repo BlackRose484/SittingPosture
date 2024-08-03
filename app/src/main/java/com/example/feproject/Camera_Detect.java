@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -24,8 +26,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.video.MediaStoreOutputOptions;
@@ -46,9 +50,12 @@ import androidx.lifecycle.LifecycleOwner;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Camera_Detect extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 200;
@@ -60,11 +67,12 @@ public class Camera_Detect extends AppCompatActivity {
 
     private Handler timerHandler = new Handler();
     private Runnable timerRunnable;
+    private ExecutorService cameraExecutor;
     private long startTime = 0;
 
     PreviewView previewView;
     ImageButton btnCapture, btnVideo,  btnChange;
-    TextView timerTextView;
+    TextView timerTextView, PredictTextView;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -83,8 +91,10 @@ public class Camera_Detect extends AppCompatActivity {
         btnChange = findViewById(R.id.change_cam_btn);
         timerTextView = findViewById(R.id.video_time);
         previewView = findViewById(R.id.preview_view);
+        PredictTextView = findViewById(R.id.predict_text);
 
         if (allPermissionsGranted()) {
+            cameraExecutor = Executors.newSingleThreadExecutor();
             startCameraX(cameraFacing);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -161,12 +171,40 @@ public class Camera_Detect extends AppCompatActivity {
                         .build();
                 videoCapture = VideoCapture.withOutput(recorder);
 
-                cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture);
+                ImageAnalysis imageAnalysis =
+                        new ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build();
+
+                imageAnalysis.setAnalyzer(cameraExecutor, image -> {
+                    processImage(image);
+                    image.close();
+                });
+
+                cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture, imageAnalysis);
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         }, ContextCompat.getMainExecutor(this));
 
+    }
+
+
+    private void processImage(ImageProxy image) {
+        // Chuyển đổi ImageProxy thành byte array hoặc base64 string
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+
+        // Chuyển đổi thành base64
+        String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+
+        // Gửi ảnh qua APIi
+        if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
+            PredictTextView.setText("This is a man");
+        } else {
+            PredictTextView.setText("This is a dog");
+        }
     }
 
     private void takePhoto() {

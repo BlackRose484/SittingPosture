@@ -44,5 +44,12 @@ public class Dashboard extends AppCompatActivity {
                 startActivity(new Intent(Dashboard.this, Camera_Detect.class));
             }
         });
+
+        chat_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(Dashboard.this, ChatWithAI.class));
+            }
+        });
     }
 }

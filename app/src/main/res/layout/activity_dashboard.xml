@@ -67,44 +67,80 @@
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     <ImageView
-        android:layout_width="233dp"
-        android:layout_height="427dp"
-        android:layout_marginTop="212dp"
-        android:layout_marginEnd="172dp"
+        android:layout_width="263dp"
+        android:layout_height="466dp"
+        android:layout_marginTop="240dp"
+        android:layout_marginEnd="188dp"
         android:src="@drawable/spine2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="409dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        tools:layout_editor_absoluteX="1dp">
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TextView" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/camera_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="268dp"
-
-        android:background="@color/black"
+        android:layout_width="167dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="320dp"
+        android:backgroundTint="#0AD3FF"
+        android:backgroundTintMode="add"
         android:text="Camera"
+        android:textAlignment="textStart"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:icon="@drawable/camera_btn"
+        app:iconTint="#000000"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.916"
+        app:layout_constraintHorizontal_bias="0.913"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="368dp"
-        android:text="Chat"
+        android:id="@+id/statistic_btn"
+        android:layout_width="167dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="580dp"
+        android:backgroundTint="#0AD3FF"
+        android:backgroundTintMode="add"
+        android:text="Statistic"
+        android:textAlignment="textStart"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:icon="@drawable/graph"
+        app:iconTint="#000000"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.888"
+        app:layout_constraintHorizontal_bias="0.913"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="468dp"
-        android:text="Static"
+        android:id="@+id/chat_btn"
+        android:layout_width="167dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="456dp"
+        android:backgroundTint="#0AD3FF"
+        android:backgroundTintMode="add"
+        android:text="Chat with AI"
+        android:textAlignment="textStart"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:icon="@drawable/chat"
+        app:iconTint="#000000"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.888"
+        app:layout_constraintHorizontal_bias="0.913"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

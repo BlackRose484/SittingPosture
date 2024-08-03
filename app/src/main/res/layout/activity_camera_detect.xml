@@ -5,56 +5,69 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
     android:orientation="vertical"
     tools:context=".Camera_Detect">
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="61dp"
-        android:text="Camera"
-        android:layout_gravity="center"
-        android:textSize="34sp" />
-
     <androidx.camera.view.PreviewView
         android:id="@+id/preview_view"
-        android:layout_width="282dp"
-        android:layout_height="442dp"
-        android:layout_gravity="center"/>
+        android:layout_width="375dp"
+        android:layout_height="642dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="15dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_height="60dp"
+        android:layout_gravity="center"
         android:layout_marginTop="20dp"
-        android:layout_gravity="center">
+        android:orientation="horizontal">
 
-        <Button
+        <ImageButton
             android:id="@+id/change_cam_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="79dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Change"/>
+            android:background="@drawable/button_custom"
+            android:src="@drawable/flip_camera" />
 
-        <Button
+        <ImageButton
             android:id="@+id/capture_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="10dp"
+            android:layout_width="83dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="10dp"
-            android:text="Capture" />
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_custom"
+            android:src="@drawable/photo_camera" />
 
-        <Button
+        <ImageButton
             android:id="@+id/video_btn"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="10dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="10dp"
-            android:text="Video" />
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_custom"
+            android:src="@drawable/videocam" />
 
     </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/video_time"
+            android:layout_width="90dp"
+            android:layout_height="43dp"
+            android:layout_marginTop="16dp"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.976"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

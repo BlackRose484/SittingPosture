@@ -8,12 +8,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -25,7 +28,6 @@ import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.video.FallbackStrategy;
 import androidx.camera.video.MediaStoreOutputOptions;
 import androidx.camera.video.Quality;
 import androidx.camera.video.QualitySelector;
@@ -56,13 +58,13 @@ public class Camera_Detect extends AppCompatActivity {
     private Recording recording = null;
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
 
-    PreviewView previewView;
-    Button btnCapture, btnVideo, btnChange;
+    private Handler timerHandler = new Handler();
+    private Runnable timerRunnable;
+    private long startTime = 0;
 
-    private static final String[] CAMERA_PERMISSIONS = new String[]{
-            android.Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO
-    };
+    PreviewView previewView;
+    ImageButton btnCapture, btnVideo,  btnChange;
+    TextView timerTextView;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -79,6 +81,7 @@ public class Camera_Detect extends AppCompatActivity {
         btnCapture = findViewById(R.id.capture_btn);
         btnVideo = findViewById(R.id.video_btn);
         btnChange = findViewById(R.id.change_cam_btn);
+        timerTextView = findViewById(R.id.video_time);
         previewView = findViewById(R.id.preview_view);
 
         if (allPermissionsGranted()) {
@@ -114,6 +117,19 @@ public class Camera_Detect extends AppCompatActivity {
             }
         });
 
+        timerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                long millis = System.currentTimeMillis() - startTime;
+                int seconds = (int) (millis / 1000);
+                int minutes = seconds / 60;
+                seconds = seconds % 60;
+
+                timerTextView.setText(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds));
+
+                timerHandler.postDelayed(this, 500);
+            }
+        };
     }
 
     private boolean allPermissionsGranted() {
@@ -184,10 +200,12 @@ public class Camera_Detect extends AppCompatActivity {
     private void startRecording() {
         Recording record1 = recording;
         if (record1 != null) {
+            stopTimer();
             record1.stop();
             recording = null;
             return;
         }
+        startTimer();
 
         String name = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis());
         ContentValues contentValues = new ContentValues();
@@ -214,10 +232,10 @@ public class Camera_Detect extends AppCompatActivity {
         recording = videoCapture.getOutput().prepareRecording(Camera_Detect.this, outputOptions).withAudioEnabled().start(ContextCompat.getMainExecutor(Camera_Detect.this), videoRecordEvent -> {
             if (videoRecordEvent instanceof VideoRecordEvent.Start) {
                 btnVideo.setEnabled(true);
-                btnVideo.setText("Stop Recording");
+                btnVideo.setImageResource(R.drawable.on_record);
             } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
                 if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
-                    String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
+                    String msg = "Video capture succeeded: ";
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 } else {
                     recording.close();
@@ -225,8 +243,18 @@ public class Camera_Detect extends AppCompatActivity {
                     String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 }
-                btnVideo.setText("Start Recording");
+                btnVideo.setImageResource(R.drawable.videocam);
             }
         });
+    }
+
+    private void startTimer() {
+        startTime = System.currentTimeMillis();
+        timerHandler.postDelayed(timerRunnable, 0);
+    }
+
+    private void stopTimer() {
+        timerHandler.removeCallbacks(timerRunnable);
+        timerTextView.setText("00:00");
     }
 }

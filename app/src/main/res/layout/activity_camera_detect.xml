@@ -10,12 +10,29 @@
     android:orientation="vertical"
     tools:context=".Camera_Detect">
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/preview_view"
-        android:layout_width="375dp"
-        android:layout_height="642dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="15dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="602dp">
+        <androidx.camera.view.PreviewView
+            android:id="@+id/preview_view"
+            android:layout_width="match_parent"
+            android:layout_height="642dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp">
+        </androidx.camera.view.PreviewView>
+
+        <TextView
+            android:id="@+id/predict_text"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text=""
+            android:textAlignment="center"
+            android:textColor="#31EF1C"
+            android:textSize="20sp" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -69,17 +86,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/predict_text"
-            android:layout_width="111dp"
-            android:layout_height="55dp"
-            android:layout_marginTop="48dp"
-            android:textAlignment="center"
-            android:textSize="24sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.267"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

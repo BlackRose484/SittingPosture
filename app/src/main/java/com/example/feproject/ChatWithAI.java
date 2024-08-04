@@ -20,13 +20,36 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.ai.client.generativeai.GenerativeModel;
+import com.google.ai.client.generativeai.java.GenerativeModelFutures;
+import com.google.ai.client.generativeai.type.Content;
+import com.google.ai.client.generativeai.type.GenerateContentResponse;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.Executor;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ChatWithAI extends AppCompatActivity {
 
@@ -40,6 +63,10 @@ public class ChatWithAI extends AppCompatActivity {
     ListView messageView;
     ArrayList<MessengerModel> list_messages = new ArrayList<>();
     int screenWidth = 0, screenHeight = 0;
+
+    public static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
+    OkHttpClient client = new OkHttpClient();
 
     @SuppressLint({"MissingInflatedId", "WrongViewCast"})
     @Override
@@ -79,7 +106,7 @@ public class ChatWithAI extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
                 text_msg.setText("");
                 sqlite.execSQL("INSERT INTO chatbot(sender, message, time) VALUES('" + sender_id + "', '" + message + "', '" + date.toString() + "')");
-
+                callAPI(message);
                 getMessages();
                 adapter.notifyDataSetChanged();
             }
@@ -137,6 +164,45 @@ public class ChatWithAI extends AppCompatActivity {
         while (list_messages.size() > 10) {
             list_messages.remove(0);
         }
+    }
+
+    void addResponse(String response){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Date date = new Date();
+                sqlite.execSQL("INSERT INTO chatbot(sender, message, time) VALUES('" + 0 + "', '" + response + "', '" + date.toString() + "')");
+                getMessages();
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void callAPI(String question) {
+        String APIKey = "AIzaSyAYEwW36K4qahVI3JPnVt33QEe5IWY8UsE";
+
+        GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", APIKey);
+        GenerativeModelFutures model = GenerativeModelFutures.from(gm);
+
+        Content content = new Content.Builder()
+                .addText(question)
+                .build();
+
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        ListenableFuture<GenerateContentResponse> response = model.generateContent(content);
+        Futures.addCallback(response, new FutureCallback<GenerateContentResponse>() {
+            @Override
+            public void onSuccess(GenerateContentResponse result) {
+                String resultText = result.getText();
+                addResponse(resultText);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                t.printStackTrace();
+            }
+        }, executor);
     }
 
 }

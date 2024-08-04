@@ -44,9 +44,14 @@ public class MessengerAdapter extends ArrayAdapter {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();
-        convertView = inflater.inflate(id_layout, null);
+
 
         MessengerModel message = messagesArrayList.get(position);
+        if (message.getSender() == 0) {
+            convertView = inflater.inflate(R.layout.receiver_layout, null);
+        } else {
+            convertView = inflater.inflate(R.layout.receiver_layout, null);
+        }
         TextView messageView = convertView.findViewById(R.id.recivertextset);
         ImageView imageView = convertView.findViewById(R.id.pro);
 

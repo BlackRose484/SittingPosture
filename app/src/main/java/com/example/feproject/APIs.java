@@ -24,7 +24,7 @@ public class APIs {
         // Create a JSON RequestBody
         RequestBody body = RequestBody.create(json, JSON);
         Request request = new Request.Builder()
-                .url("http://192.168.0.105:8086/checkpose/")
+                .url("http://10.10.92.54:8086/checkpose/")
                 .post(body)
                 .build();
         try {
@@ -37,7 +37,7 @@ public class APIs {
         } catch (IOException e) {
             Log.e("IOException %s", "Error", e);
         }
-        return "";
+        return ":";
     }
 
     public static void checkPoseAsync(String base64_image, Callback callback) {

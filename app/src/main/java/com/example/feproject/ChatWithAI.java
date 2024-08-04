@@ -153,7 +153,7 @@ public class ChatWithAI extends AppCompatActivity {
             int sender = c.getInt(0);
             String time = c.getString(2);
             if (sender == 1) {
-                list_messages.add(new MessengerModel(message, R.drawable.user, time));
+                list_messages.add(new MessengerModel(message, R.drawable.user2, time));
             } else {
                 list_messages.add(new MessengerModel(message, R.drawable.computer, time));
             }

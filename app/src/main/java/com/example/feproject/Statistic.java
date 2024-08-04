@@ -82,7 +82,7 @@ public class Statistic extends AppCompatActivity {
 
         YAxis yAxis = barChart.getAxisLeft();
         yAxis.setAxisMinimum(0);
-        yAxis.setAxisMaximum(100);
+        yAxis.setAxisMaximum(200);
         yAxis.setAxisLineWidth(2f);
         yAxis.setAxisLineColor(Color.BLACK);
         yAxis.setLabelCount(10);

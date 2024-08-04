@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.speech.tts.TextToSpeech;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Surface;
@@ -59,13 +60,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Camera_Detect extends AppCompatActivity {
+public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnInitListener {
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private ImageCapture imageCapture;
     private VideoCapture<Recorder> videoCapture;
     private Recording recording = null;
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
+    private static final String TAG = "Camera_Detect";
     SQLiteDatabase database;
     int backward = 0;
     int forward = 0;
@@ -81,7 +83,10 @@ public class Camera_Detect extends AppCompatActivity {
     private Runnable timerRunnable;
     private ExecutorService cameraExecutor;
     private long startTime1 = 0;
+    private int check = 0;
 
+
+    TextToSpeech textToSpeech;
     PreviewView previewView;
     ImageButton btnCapture, btnVideo,  btnChange;
     TextView timerTextView, PredictTextView;
@@ -137,6 +142,8 @@ public class Camera_Detect extends AppCompatActivity {
                 startRecording();
             }
         });
+
+        textToSpeech = new TextToSpeech(this, this);
 
         btnChange.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,17 +236,29 @@ public class Camera_Detect extends AppCompatActivity {
                 String finalPred = pred;
                 String []list_pred = pred.split(",");
                 for (String x: list_pred) {
+                    if (x.equals("Correct Sitting")) {
+                        correct ++;
+                        if (check != 0) {
+                            textToSpeech.speak(pred, TextToSpeech.QUEUE_FLUSH, null, null);
+                            check = 0;
+                        }
+                    }
                     if (x.equals("Neck bending")) {
                         bending ++;
                     }
                     if (x.equals("Leaning forward")) {
                         forward ++;
+                        if (check != 1) {
+                            textToSpeech.speak(pred, TextToSpeech.QUEUE_FLUSH, null, null);
+                            check = 1;
+                        }
                     }
-                    if (x.equals("Leaning backward")) {
+                    else if (x.equals("Leaning backward")) {
                         backward ++;
-                    }
-                    if (x.equals("Correct Sitting")) {
-                        correct ++;
+                        if (check != 2) {
+                            textToSpeech.speak(pred, TextToSpeech.QUEUE_FLUSH, null, null);
+                            check = 2;
+                        }
                     }
                 }
                 runOnUiThread(() -> {
@@ -389,10 +408,10 @@ public class Camera_Detect extends AppCompatActivity {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String currentDate = sdf.format(new Date());
 
-        int bending_val = bending * 1000 / (int) (endTime - startTime);
-        int forward_val = forward * 1000 / (int) (endTime - startTime);
-        int correct_val = correct * 1000 / (int) (endTime - startTime);
-        int backward_val = backward * 1000 / (int) (endTime - startTime);
+        int bending_val = bending;
+        int forward_val = forward;
+        int correct_val = correct;
+        int backward_val = backward;
 
         database.execSQL("INSERT INTO statistics(day, correct, forward, backward, bending) VALUES('" + currentDate + "', '" + correct_val + "', '" + forward_val + "', '" + backward_val + "', '" + bending_val + "')");
         bending = 0;
@@ -400,4 +419,32 @@ public class Camera_Detect extends AppCompatActivity {
         forward = 0;
         backward = 0;
     }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int langResult = textToSpeech.setLanguage(Locale.US); // Chọn ngôn ngữ, ví dụ: Locale.US
+
+            if (langResult == TextToSpeech.LANG_MISSING_DATA ||
+                    langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Ngôn ngữ không được hỗ trợ hoặc dữ liệu ngôn ngữ bị thiếu.");
+            } else {
+                // Đọc văn bản thành tiếng
+                String textToRead = "Hello, welcome to the Sitting Posture Corrector.";
+                textToSpeech.speak(textToRead, TextToSpeech.QUEUE_FLUSH, null, null);
+            }
+        } else {
+            Log.e(TAG, "Khởi tạo Text-to-Speech thất bại.");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
+    }
+
 }

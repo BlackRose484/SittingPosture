@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
@@ -52,6 +53,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -64,13 +66,21 @@ public class Camera_Detect extends AppCompatActivity {
     private VideoCapture<Recorder> videoCapture;
     private Recording recording = null;
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
+    SQLiteDatabase database;
+    int backward = 0;
+    int forward = 0;
+    int bending = 0;
+    int correct = 0;
+    long startTime = 0;
+    long endTime = 0;
+
 
     private boolean isRecording = false;
 
     private Handler timerHandler = new Handler();
     private Runnable timerRunnable;
     private ExecutorService cameraExecutor;
-    private long startTime = 0;
+    private long startTime1 = 0;
 
     PreviewView previewView;
     ImageButton btnCapture, btnVideo,  btnChange;
@@ -107,6 +117,13 @@ public class Camera_Detect extends AppCompatActivity {
             }, REQUEST_CAMERA_PERMISSION);
         }
 
+        database = openOrCreateDatabase("statistics", MODE_PRIVATE, null);
+        try {
+            database.execSQL("CREATE TABLE IF NOT EXISTS statistics (day VARCHAR ,correct REAL, forward REAL, backward REAL, bending REAL)");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         btnCapture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +149,7 @@ public class Camera_Detect extends AppCompatActivity {
         timerRunnable = new Runnable() {
             @Override
             public void run() {
-                long millis = System.currentTimeMillis() - startTime;
+                long millis = System.currentTimeMillis() - startTime1;
                 int seconds = (int) (millis / 1000);
                 int minutes = seconds / 60;
                 seconds = seconds % 60;
@@ -176,16 +193,16 @@ public class Camera_Detect extends AppCompatActivity {
                         .build();
                 videoCapture = VideoCapture.withOutput(recorder);
 
-                ImageAnalysis imageAnalysis =
-                        new ImageAnalysis.Builder()
-                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                                .build();
-                imageAnalysis.setAnalyzer(cameraExecutor, image -> {
-                    processImage(image);
-                    image.close();
-                });
+//                ImageAnalysis imageAnalysis =
+//                        new ImageAnalysis.Builder()
+//                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+//                                .build();
+//                imageAnalysis.setAnalyzer(cameraExecutor, image -> {
+//                    processImage(image);
+//                    image.close();
+//                });
 
-                cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture, imageAnalysis);
+                cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture);
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -210,6 +227,21 @@ public class Camera_Detect extends AppCompatActivity {
                 pred = pred.substring(1, pred.length() - 2);
                 // Update UI with the result
                 String finalPred = pred;
+                String []list_pred = pred.split(",");
+                for (String x: list_pred) {
+                    if (x.equals("Neck bending")) {
+                        bending ++;
+                    }
+                    if (x.equals("Leaning forward")) {
+                        forward ++;
+                    }
+                    if (x.equals("Leaning backward")) {
+                        backward ++;
+                    }
+                    if (x.equals("Correct Sitting")) {
+                        correct ++;
+                    }
+                }
                 runOnUiThread(() -> {
                     PredictTextView.setText(finalPred);
                     Log.d("RESULTS", finalPred);
@@ -300,14 +332,17 @@ public class Camera_Detect extends AppCompatActivity {
     private void startRecording() {
         if (!isRecording) {
             isRecording = true;
-//            btnVideo.setText("Stop Recording");
+            btnVideo.setImageResource(R.drawable.on_record);
             startTimer();
+            startTime = System.currentTimeMillis();
             timerHandler.postDelayed(captureImageRunnable, 0);
         } else {
             isRecording = false;
-//            btnVideo.setText("Start Recording");
+            btnVideo.setImageResource(R.drawable.videocam);
             stopTimer();
+            endTime = System.currentTimeMillis();
             timerHandler.removeCallbacks(captureImageRunnable);
+            saveToDatabse();
         }
     }
 
@@ -340,7 +375,7 @@ public class Camera_Detect extends AppCompatActivity {
 
 
     private void startTimer() {
-        startTime = System.currentTimeMillis();
+        startTime1 = System.currentTimeMillis();
         timerHandler.postDelayed(timerRunnable, 0);
     }
 
@@ -348,5 +383,21 @@ public class Camera_Detect extends AppCompatActivity {
         timerHandler.removeCallbacks(timerRunnable);
         timerTextView.setText("00:00");
         PredictTextView.setText("");
+    }
+
+    private void saveToDatabse() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String currentDate = sdf.format(new Date());
+
+        int bending_val = bending * 1000 / (int) (endTime - startTime);
+        int forward_val = forward * 1000 / (int) (endTime - startTime);
+        int correct_val = correct * 1000 / (int) (endTime - startTime);
+        int backward_val = backward * 1000 / (int) (endTime - startTime);
+
+        database.execSQL("INSERT INTO statistics(day, correct, forward, backward, bending) VALUES('" + currentDate + "', '" + correct_val + "', '" + forward_val + "', '" + backward_val + "', '" + bending_val + "')");
+        bending = 0;
+        correct = 0;
+        forward = 0;
+        backward = 0;
     }
 }

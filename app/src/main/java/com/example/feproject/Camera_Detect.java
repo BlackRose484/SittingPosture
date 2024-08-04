@@ -196,7 +196,6 @@ public class Camera_Detect extends AppCompatActivity {
 
 
     private void processImage(ImageProxy image) {
-
         // Chuyển đổi ImageProxy thành byte array hoặc base64 string
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
         byte[] bytes = new byte[buffer.remaining()];
@@ -204,23 +203,19 @@ public class Camera_Detect extends AppCompatActivity {
 
         // Chuyển đổi thành base64
         String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
-//        Log.d("DEBUG",base64Image);
         APIs.checkPoseAsync(base64Image, new APIs.Callback() {
             @Override
             public void onResult(String result) {
+                String pred = result.split(":")[1];
+                pred = pred.substring(1, pred.length() - 2);
                 // Update UI with the result
+                String finalPred = pred;
                 runOnUiThread(() -> {
-                    PredictTextView.setText(result);
-                    Log.d("RESULTS",result);
+                    PredictTextView.setText(finalPred);
+                    Log.d("RESULTS", finalPred);
                 });
             }
         });
-
-//        if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
-//            PredictTextView.setText("This is a man");
-//        } else {
-//            PredictTextView.setText("This is a dog");
-//        }
     }
 
     private void takePhoto() {
@@ -322,7 +317,7 @@ public class Camera_Detect extends AppCompatActivity {
         public void run() {
             if (isRecording) {
                 captureImageForPrediction();
-                timerHandler.postDelayed(this, 1000); // Capture image every 0.5 seconds
+                timerHandler.postDelayed(this, 500); // Capture image every 0.5 seconds
             }
         }
     };
@@ -352,5 +347,6 @@ public class Camera_Detect extends AppCompatActivity {
     private void stopTimer() {
         timerHandler.removeCallbacks(timerRunnable);
         timerTextView.setText("00:00");
+        PredictTextView.setText("");
     }
 }

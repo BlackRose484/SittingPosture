@@ -81,8 +81,12 @@ dependencies {
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
     implementation("com.google.guava:guava:31.0.1-android")
     implementation("org.reactivestreams:reactive-streams:1.0.4")
-    
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     implementation("com.squareup.okhttp3:logging-interceptor")
     implementation("com.google.android.gms:play-services-cronet:18.0.1")
+
+
 }

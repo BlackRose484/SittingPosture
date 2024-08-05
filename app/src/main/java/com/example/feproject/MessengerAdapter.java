@@ -27,37 +27,79 @@ import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 
-public class MessengerAdapter extends ArrayAdapter {
-    Activity context;
-    int id_layout;
-    ArrayList<MessengerModel> messagesArrayList;
+public class MessengerAdapter extends RecyclerView.Adapter {
+    Context context;
+    ArrayList<MessengerModel> messages;
+    int SENDER = 1;
+    int RECEIVER = 0;
 
-
-    public MessengerAdapter(Activity context, int id_layout, ArrayList<MessengerModel> messagesArrayList) {
-        super(context, id_layout, messagesArrayList);
+    public MessengerAdapter(Context context, ArrayList<MessengerModel> messages) {
         this.context = context;
-        this.id_layout = id_layout;
-        this.messagesArrayList = messagesArrayList;
+        this.messages = messages;
     }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-
-
-        MessengerModel message = messagesArrayList.get(position);
-        if (message.getSender() == 0) {
-            convertView = inflater.inflate(R.layout.receiver_layout, null);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == SENDER) {
+            View view = LayoutInflater.from(context).inflate(R.layout.sender_layout, parent, false);
+            return new senderViewHolder(view);
         } else {
-            convertView = inflater.inflate(R.layout.receiver_layout, null);
+            View view = LayoutInflater.from(context).inflate(R.layout.receiver_layout, parent, false);
+            return new receiverViewHolder(view);
         }
-        TextView messageView = convertView.findViewById(R.id.recivertextset);
-        ImageView imageView = convertView.findViewById(R.id.pro);
+    }
 
-        messageView.setText(message.getMessage());
-        imageView.setImageResource(message.getSender());
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        MessengerModel message = messages.get(position);
+        if (holder.getClass() == senderViewHolder.class) {
+            senderViewHolder viewHolder = (senderViewHolder) holder;
+            viewHolder.message.setText(message.getMessage());
+            viewHolder.image.setImageResource(R.drawable.user2);
+        } else {
+            receiverViewHolder viewHolder = (receiverViewHolder) holder;
+            viewHolder.message.setText(message.getMessage());
+            viewHolder.image.setImageResource(R.drawable.computer);
+        }
+    }
 
-        return convertView;
+    @Override
+    public int getItemCount() {
+        if (messages != null) {
+            return messages.size();
+        }
+        return 0;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (messages.get(position).getSender() == SENDER) {
+            return SENDER;
+        } else {
+            return RECEIVER;
+        }
+    }
+
+    class senderViewHolder extends RecyclerView.ViewHolder {
+        TextView message, time;
+        ImageView image;
+
+        public senderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            message = itemView.findViewById(R.id.sender_text);
+            image = itemView.findViewById(R.id.sender_img);
+        }
+    }
+
+    class receiverViewHolder extends RecyclerView.ViewHolder {
+        TextView message, time;
+        ImageView image;
+
+        public receiverViewHolder(@NonNull View itemView) {
+            super(itemView);
+            message = itemView.findViewById(R.id.receiver_text);
+            image = itemView.findViewById(R.id.receiver_img);
+        }
     }
 }

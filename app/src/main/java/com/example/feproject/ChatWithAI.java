@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.ai.client.generativeai.GenerativeModel;
@@ -53,22 +54,18 @@ import okhttp3.Response;
 
 public class ChatWithAI extends AppCompatActivity {
 
-    int imageUser[] = {R.drawable.computer, R.drawable.user};
     CardView send_btn;
     LinearLayout edit_text;
     EditText text_msg;
     int sender_id = 1;
     SQLiteDatabase sqlite;
     MessengerAdapter adapter;
-    ListView messageView;
+    RecyclerView messageView;
     ArrayList<MessengerModel> list_messages = new ArrayList<>();
+
     int screenWidth = 0, screenHeight = 0;
 
-    public static final MediaType JSON
-            = MediaType.get("application/json; charset=utf-8");
-    OkHttpClient client = new OkHttpClient();
-
-    @SuppressLint({"MissingInflatedId", "WrongViewCast"})
+    @SuppressLint({"MissingInflatedId", "WrongViewCast", "NotifyDataSetChanged"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -85,7 +82,12 @@ public class ChatWithAI extends AppCompatActivity {
         text_msg = findViewById(R.id.textmsg);
         edit_text = findViewById(R.id.listview_text);
         messageView = findViewById(R.id.msg_adapter);
-        adapter = new MessengerAdapter(this, R.layout.receiver_layout, list_messages);
+
+        adapter = new MessengerAdapter(this, list_messages);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setStackFromEnd(true);
+
+        messageView.setLayoutManager(linearLayoutManager);
         messageView.setAdapter(adapter);
 
         sqlite = openOrCreateDatabase("chatbot", MODE_PRIVATE, null);
@@ -103,7 +105,6 @@ public class ChatWithAI extends AppCompatActivity {
             public void onClick(View view) {
                 Date date = new Date();
                 String message = text_msg.getText().toString();
-                adapter.notifyDataSetChanged();
                 text_msg.setText("");
                 sqlite.execSQL("INSERT INTO chatbot(sender, message, time) VALUES('" + sender_id + "', '" + message + "', '" + date.toString() + "')");
                 callAPI(message);
@@ -119,29 +120,23 @@ public class ChatWithAI extends AppCompatActivity {
         screenWidth = displayMetrics.widthPixels;
         screenHeight = displayMetrics.heightPixels;
 
-        text_msg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                edit_text.setY((float) (screenHeight * 0.68));
-            }
-        });
-
-        text_msg.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) {
-                    edit_text.setY((float) (screenHeight * 0.68));
-                } else {
-                    edit_text.setY((float) (screenHeight * 0.98));
-                }
-            }
-        });
-        messageView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                edit_text.setY((float) (screenHeight * 0.95));
-            }
-        });
+//        text_msg.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                edit_text.setY((float) (screenHeight * 0.68));
+//            }
+//        });
+//
+//        text_msg.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View view, boolean b) {
+//                if (b) {
+//                    edit_text.setY((float) (screenHeight * 0.68));
+//                } else {
+//                    edit_text.setY((float) (screenHeight * 0.98));
+//                }
+//            }
+//        });
     }
 
     private void getMessages() {
@@ -153,9 +148,9 @@ public class ChatWithAI extends AppCompatActivity {
             int sender = c.getInt(0);
             String time = c.getString(2);
             if (sender == 1) {
-                list_messages.add(new MessengerModel(message, R.drawable.user2, time));
+                list_messages.add(new MessengerModel(message, sender_id, time));
             } else {
-                list_messages.add(new MessengerModel(message, R.drawable.computer, time));
+                list_messages.add(new MessengerModel(message, 0, time));
             }
             c.moveToNext();
         }

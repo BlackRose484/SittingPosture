@@ -3,21 +3,12 @@ package com.example.feproject;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
-import android.window.OnBackInvokedDispatcher;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -35,22 +26,9 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Executor;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class ChatWithAI extends AppCompatActivity {
 
@@ -62,8 +40,6 @@ public class ChatWithAI extends AppCompatActivity {
     MessengerAdapter adapter;
     RecyclerView messageView;
     ArrayList<MessengerModel> list_messages = new ArrayList<>();
-
-    int screenWidth = 0, screenHeight = 0;
 
     @SuppressLint({"MissingInflatedId", "WrongViewCast", "NotifyDataSetChanged"})
     @Override
@@ -105,6 +81,8 @@ public class ChatWithAI extends AppCompatActivity {
             public void onClick(View view) {
                 Date date = new Date();
                 String message = text_msg.getText().toString();
+                message = message.trim();
+                message = message.replace("'", " ");
                 text_msg.setText("");
                 sqlite.execSQL("INSERT INTO chatbot(sender, message, time) VALUES('" + sender_id + "', '" + message + "', '" + date.toString() + "')");
                 callAPI(message);
@@ -112,31 +90,6 @@ public class ChatWithAI extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-
-        screenWidth = displayMetrics.widthPixels;
-        screenHeight = displayMetrics.heightPixels;
-
-//        text_msg.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                edit_text.setY((float) (screenHeight * 0.68));
-//            }
-//        });
-//
-//        text_msg.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View view, boolean b) {
-//                if (b) {
-//                    edit_text.setY((float) (screenHeight * 0.68));
-//                } else {
-//                    edit_text.setY((float) (screenHeight * 0.98));
-//                }
-//            }
-//        });
     }
 
     private void getMessages() {
@@ -190,6 +143,7 @@ public class ChatWithAI extends AppCompatActivity {
             @Override
             public void onSuccess(GenerateContentResponse result) {
                 String resultText = result.getText();
+                resultText = resultText.replace("'", " ");
                 addResponse(resultText);
             }
 

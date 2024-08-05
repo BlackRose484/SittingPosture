@@ -200,15 +200,6 @@ public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnI
                         .build();
                 videoCapture = VideoCapture.withOutput(recorder);
 
-//                ImageAnalysis imageAnalysis =
-//                        new ImageAnalysis.Builder()
-//                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//                                .build();
-//                imageAnalysis.setAnalyzer(cameraExecutor, image -> {
-//                    processImage(image);
-//                    image.close();
-//                });
-
                 cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture);
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
@@ -227,7 +218,6 @@ public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnI
 
         // Chuyển đổi thành base64
         String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
-        Toast.makeText(this, "Processing image..." + base64Image.length(), Toast.LENGTH_SHORT).show();
         APIs.checkPoseAsync(base64Image, new APIs.Callback() {
             @Override
             public void onResult(String result) {
@@ -263,7 +253,13 @@ public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnI
                     }
                 }
                 runOnUiThread(() -> {
-                    PredictTextView.setText(finalPred);
+                    if (finalPred.equals("Correct Sitting")) {
+                        PredictTextView.setBackgroundColor(getResources().getColor(R.color.green));
+                        PredictTextView.setText(finalPred);
+                    } else {
+                        PredictTextView.setText(finalPred);
+                        PredictTextView.setBackgroundColor(getResources().getColor(R.color.red));
+                    }
                     Log.d("RESULTS", finalPred);
                 });
             }
@@ -298,58 +294,49 @@ public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnI
         });
     }
 
-//    private void startRecording() {
-//        Recording record1 = recording;
-//        if (record1 != null) {
-//            stopTimer();
-//            record1.stop();
-//            recording = null;
-//            return;
-//        }
-//        startTimer();
-//
-//        String name = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis());
-//        ContentValues contentValues = new ContentValues();
-//        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-//        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-//        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
-//
-//        MediaStoreOutputOptions outputOptions = new MediaStoreOutputOptions.Builder(getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-//                .setContentValues(contentValues)
-//                .build();
-//
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            String msg = "Error: Please get audio permission";
-//            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//        recording = videoCapture.getOutput().prepareRecording(Camera_Detect.this, outputOptions).withAudioEnabled().start(ContextCompat.getMainExecutor(Camera_Detect.this), videoRecordEvent -> {
-//            if (videoRecordEvent instanceof VideoRecordEvent.Start) {
-//                btnVideo.setEnabled(true);
-//                btnVideo.setImageResource(R.drawable.on_record);
-//            } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-//                if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
-//                    String msg = "Video capture succeeded: ";
-//                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-//                } else {
-//                    recording.close();
-//                    recording = null;
-//                    String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
-//                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-//                }
-//                btnVideo.setImageResource(R.drawable.videocam);
-//            }
-//        });
-//    }
+    private void saveVideo() {
+        Recording record1 = recording;
+        if (record1 != null) {
+            stopTimer();
+            record1.stop();
+            recording = null;
+            return;
+        }
+
+        String name = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis());
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+
+        MediaStoreOutputOptions outputOptions = new MediaStoreOutputOptions.Builder(getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                .setContentValues(contentValues)
+                .build();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            String msg = "Error: Please get audio permission";
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        recording = videoCapture.getOutput().prepareRecording(Camera_Detect.this, outputOptions).withAudioEnabled().start(ContextCompat.getMainExecutor(Camera_Detect.this), videoRecordEvent -> {
+            if (videoRecordEvent instanceof VideoRecordEvent.Start) {
+                btnVideo.setEnabled(true);
+            } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
+                    String msg = "Video capture succeeded: ";
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                } else {
+                    recording.close();
+                    recording = null;
+                    String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 
     private void startRecording() {
+        saveVideo();
         if (!isRecording) {
             isRecording = true;
             btnVideo.setImageResource(R.drawable.on_record);

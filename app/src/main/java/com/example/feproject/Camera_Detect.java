@@ -227,6 +227,7 @@ public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnI
 
         // Chuyển đổi thành base64
         String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+        Toast.makeText(this, "Processing image..." + base64Image.length(), Toast.LENGTH_SHORT).show();
         APIs.checkPoseAsync(base64Image, new APIs.Callback() {
             @Override
             public void onResult(String result) {
@@ -371,7 +372,7 @@ public class Camera_Detect extends AppCompatActivity implements TextToSpeech.OnI
         public void run() {
             if (isRecording) {
                 captureImageForPrediction();
-                timerHandler.postDelayed(this, 500); // Capture image every 0.5 seconds
+                timerHandler.postDelayed(this, 1000); // Capture image every 0.5 seconds
             }
         }
     };

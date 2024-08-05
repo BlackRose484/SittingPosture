@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -15,16 +16,22 @@ import okhttp3.Response;
 public class APIs {
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
-    public static OkHttpClient client = new OkHttpClient();
+    public static OkHttpClient client = new OkHttpClient .Builder()
+            .connectTimeout(5, TimeUnit.MINUTES) // connect timeout
+            .writeTimeout(5, TimeUnit.MINUTES) // write timeout
+            .readTimeout(5, TimeUnit.MINUTES) // read timeout
+            .build();;
+//    public static OkHttpClient client = new OkHttpClient();
 
     public static String checkPose(String base64_image) {
+
         // Create a JSON string
         String json = "{\"file\":\"" + base64_image + "\"}";
 
         // Create a JSON RequestBody
         RequestBody body = RequestBody.create(json, JSON);
         Request request = new Request.Builder()
-                .url("http://10.10.92.54:8086/checkpose/")
+                .url("http://192.168.0.103:8000/checkpose/")
                 .post(body)
                 .build();
         try {

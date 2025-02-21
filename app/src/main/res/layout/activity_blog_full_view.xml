@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -7,4 +7,20 @@
     android:layout_height="match_parent"
     tools:context=".BlogFullView">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Blogs"
+        android:textSize="30sp"
+        android:fontFamily="@font/changa_one"
+        android:textColor="#000000"
+        android:id="@+id/textView"
+        android:gravity="center"
+        android:background="@drawable/cardview"
+        tools:ignore="MissingConstraints"/>
+
+    <WebView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/blog_webview"/>
+</LinearLayout>

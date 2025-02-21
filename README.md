@@ -1,9 +1,12 @@
-# 🪑 Sitting Posture
+# 🪑 Sitting Posture - SitWise
 
 ## 📌 Overview
 **Sitting Posture** is a mobile application that utilizes AI to monitor users' sitting posture in real-time. The app detects incorrect postures and provides audio notifications with corrective feedback to help users maintain a healthy posture.
 
-Our application informs users about their sitting posture status, identifying three incorrect postures: **Neck Bending, Leaning Forward, and Leaning Backward**, along with one correct sitting posture.
+Our application informs users about their sitting posture status, identifying three incorrect postures: **Neck Bending, Leaning Forward, and Leaning Backward**, along with one correct sitting posture.  
+
+![demo](images/demo.png)
+Full Demo: [Demo](https://drive.google.com/file/d/17hal42pZkoEwQIm3t4f_ZSWP4HagyfJc/view?usp=sharing)
 
 ## ✨ Features
 - **Real-time Posture Detection**: Uses AI to analyze sitting posture continuously.

@@ -15,7 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class Dashboard extends AppCompatActivity {
 
-    Button camera_btn, chat_btn, statistic_btn;
+    Button camera_btn, chat_btn, statistic_btn, blogs_btn;
     Animation rightleftAnim;
     @SuppressLint({"WrongViewCast", "MissingInflatedId"})
     @Override
@@ -33,6 +33,7 @@ public class Dashboard extends AppCompatActivity {
         camera_btn = findViewById(R.id.camera_btn);
         chat_btn = findViewById(R.id.chat_btn);
         statistic_btn = findViewById(R.id.statistic_btn);
+        blogs_btn = findViewById(R.id.blogs_btn);
 
         camera_btn.setAnimation(rightleftAnim);
         chat_btn.setAnimation(rightleftAnim);
@@ -56,6 +57,13 @@ public class Dashboard extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(Dashboard.this, Statistic.class));
+            }
+        });
+
+        blogs_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(Dashboard.this, Blogs.class));
             }
         });
     }

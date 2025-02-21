@@ -150,4 +150,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/blogs_btn"
+        android:layout_width="172dp"
+        android:layout_height="69dp"
+        android:layout_marginTop="696dp"
+        android:backgroundTint="#2D93FA"
+        android:backgroundTintMode="add"
+        android:fontFamily="@font/changa_one"
+        android:text="Blogs"
+        android:textAlignment="textStart"
+        android:textColor="#FEFEFE"
+        android:textSize="20sp"
+        app:icon="@drawable/blogs"
+        app:iconTint="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.882"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

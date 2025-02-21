@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903460299611",
+    "project_id": "feproject-3b322",
+    "storage_bucket": "feproject-3b322.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903460299611:android:f119b443f22f85f105707e",
+        "android_client_info": {
+          "package_name": "com.example.feproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAL32BuklGgkUvkf0sv1VnalM3Yq2CtYCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

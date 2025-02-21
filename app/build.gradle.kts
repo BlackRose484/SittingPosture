@@ -85,4 +85,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-cronet:18.0.1")
 
     implementation("com.google.mediapipe:tasks-vision:0.20230731")
+    implementation ("com.github.KwabenBerko:News-API-Java:1.0.2")
+
+    implementation ("com.squareup.picasso:picasso:2.8")
 }
